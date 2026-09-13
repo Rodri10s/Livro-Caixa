@@ -1,0 +1,5 @@
+db.ip=192.168.0.X
+db.porta=3306
+db.nome=livro_caixa
+db.usuario=usuario_exemplo
+db.senha=senha_exemplo
