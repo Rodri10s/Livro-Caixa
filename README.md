@@ -106,17 +106,37 @@ Esses dados não são validados em servidor. O formulário existe apenas para re
 
 ```text
 src/livrocaixa/
-|- LivroCaixaApp.java           Entrada do programa, janela principal, navegação e dados de exemplo
-|- UiKit.java                   Componentes, cores, ícones e estilos reutilizáveis
-|- OperationalListScreens.java Telas de clientes, consultas e saídas
-|- ConsultationScreens.java    Formulário visual de nova consulta
-|- BillingScreen.java          Faturamento à vista e a prazo
-|- FinanceListScreens.java     Listagens financeiras e contas a receber
-|- PaymentScreens.java         Registro visual de pagamentos e descontos
-|- ConfirmedPaymentScreen.java Confirmação e opção para desfazer baixa
-|- ManagementScreens.java      Relatórios, configurações e cadastros auxiliares
-`- SmokeTest.java              Verificação automática da abertura e navegação das telas
+|- Main.java                         Ponto de entrada: cria o Controller na thread do Swing
+|- controller/
+|  `- LivroCaixaController.java      Coordena o Model e inicia a View
+|- model/
+|  |- LivroCaixaModel.java           Dados demonstrativos e cálculos financeiros
+|  |- Client.java                    Entidade de cliente
+|  |- Appointment.java               Entidade de consulta
+|  |- Installment.java               Entidade de parcela
+|  |- Payment.java                   Entidade de pagamento
+|  `- Expense.java                   Entidade de saída financeira
+`- view/
+   |- LivroCaixaView.java            Login, janela principal e navegação visual
+   |- UiKit.java                     Componentes, cores, ícones e estilos reutilizáveis
+   |- OperationalListScreens.java    Telas de clientes e consultas
+   |- ConsultationScreens.java       Formulário visual de nova consulta
+   |- BillingScreen.java             Faturamento à vista e a prazo
+   |- FinanceListScreens.java        Listagens financeiras e contas a receber
+   |- PaymentScreens.java            Registro visual de pagamentos e descontos
+   |- ConfirmedPaymentScreen.java    Confirmação e opção para desfazer baixa
+   |- ManagementScreens.java         Relatórios, configurações e cadastros auxiliares
+   `- SmokeTest.java                 Verificação automática da abertura e navegação das telas
 ```
+
+### Organização MVC
+
+- **Model:** guarda os exemplos exibidos nas telas e os cálculos de entradas, saídas, saldo e parcelas. Não depende do Swing.
+- **View:** contém somente a interface Java Swing, os componentes reutilizáveis e a navegação visual.
+- **Controller:** cria o cenário demonstrativo, entrega-o à View e será o ponto de ligação para regras de negócio e banco de dados em uma etapa futura.
+- **Main:** apenas inicia o Controller na thread de interface do Java Swing.
+
+Esta organização segue o padrão MVC pedido no slide, sem alterar o objetivo atual do repositório: apresentar somente o front-end.
 
 Arquivos auxiliares:
 
@@ -129,7 +149,7 @@ Arquivos auxiliares:
 Depois de compilar, o teste de navegação pode ser executado com:
 
 ```powershell
-java -cp .\build\classes livrocaixa.SmokeTest
+java -cp .\build\classes livrocaixa.view.SmokeTest
 ```
 
 O resultado esperado no terminal é:
@@ -140,10 +160,8 @@ SMOKE_TEST_OK
 
 ## O que ainda será desenvolvido
 
-Em uma próxima etapa, o front-end poderá ser conectado a uma arquitetura MVC completa. As principais integrações pendentes são:
+O projeto já está separado em pacotes MVC, porém continua sendo um protótipo visual. As principais integrações pendentes são:
 
-- Modelos e validações das entidades do sistema.
-- Controllers para separar a interface das regras de negócio.
 - Serviços de clientes, consultas, faturamento, parcelas e pagamentos.
 - Repositórios para leitura e gravação dos dados.
 - Banco de dados e scripts de criação das tabelas.

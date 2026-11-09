@@ -1,4 +1,6 @@
-package livrocaixa;
+package livrocaixa.view;
+
+import livrocaixa.model.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,24 +26,24 @@ final class OperationalListScreens {
 
     private OperationalListScreens() {}
 
-    static JComponent buildClients(LivroCaixaApp.MainFrame frame) {
-        JPanel root = LivroCaixaApp.page();
+    static JComponent buildClients(LivroCaixaView.MainFrame frame) {
+        JPanel root = LivroCaixaView.page();
         root.setBorder(new EmptyBorder(18, 18, 18, 18));
 
         JPanel north = new JPanel(new BorderLayout(0, 16));
         north.setOpaque(false);
-        north.add(LivroCaixaApp.title("Cadastro de clientes", 28), BorderLayout.NORTH);
+        north.add(LivroCaixaView.title("Cadastro de clientes", 28), BorderLayout.NORTH);
 
         UiKit.RoundPanel filters = new UiKit.RoundPanel(15).fill(FILTER_BG).shadow(false);
         filters.setLayout(new GridBagLayout());
         filters.setBorder(new EmptyBorder(17, 20, 17, 20));
         GridBagConstraints g = baseGrid();
 
-        JLabel filterLabel = LivroCaixaApp.title("Nome ou CPF", 18);
+        JLabel filterLabel = LivroCaixaView.title("Nome ou CPF", 18);
         g.gridx = 0; g.weightx = 0; g.insets = new Insets(0, 0, 0, 14);
         filters.add(filterLabel, g);
 
-        JTextField search = LivroCaixaApp.modernField("");
+        JTextField search = LivroCaixaView.modernField("");
         search.setPreferredSize(new Dimension(370, 48));
         g.gridx = 1; g.weightx = 1; g.fill = GridBagConstraints.HORIZONTAL; g.insets = new Insets(0, 0, 0, 16);
         filters.add(search, g);
@@ -57,12 +59,12 @@ final class OperationalListScreens {
         north.add(filters);
         root.add(north, BorderLayout.NORTH);
 
-        List<LivroCaixaApp.Client> source = new ArrayList<>(frame.store.clients);
+        List<Client> source = new ArrayList<>(frame.store.clients);
         source.sort(Comparator.comparingInt(c -> c.id));
         DefaultTableModel model = new DefaultTableModel(new String[]{"Código", "Nome", "CPF", "Ações"}, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
         };
-        for (LivroCaixaApp.Client c : source) model.addRow(new Object[]{String.format("%03d", c.id), c.name, c.cpf, ""});
+        for (Client c : source) model.addRow(new Object[]{String.format("%03d", c.id), c.name, c.cpf, ""});
 
         JTable table = UiKit.modernTable(model);
         table.setRowHeight(62);
@@ -86,11 +88,11 @@ final class OperationalListScreens {
                 if (viewRow < 0 || col != 3) return;
                 int row = table.convertRowIndexToModel(viewRow);
                 int id = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
-                LivroCaixaApp.Client client = frame.store.clients.stream().filter(c -> c.id == id).findFirst().orElse(null);
+                Client client = frame.store.clients.stream().filter(c -> c.id == id).findFirst().orElse(null);
                 if (client == null) return;
                 Rectangle cell = table.getCellRect(viewRow, col, true);
                 if (e.getX() - cell.x < cell.width / 2) frame.clientDialog(client);
-                else if (LivroCaixaApp.confirm(frame, "Excluir este cliente?")) {
+                else if (LivroCaixaView.confirm(frame, "Excluir este cliente?")) {
                     frame.store.clients.remove(client); frame.store.save(); frame.showPage("Clientes");
                 }
             }
@@ -112,8 +114,8 @@ final class OperationalListScreens {
         return root;
     }
 
-    static JComponent buildAppointments(LivroCaixaApp.MainFrame frame) {
-        JPanel root = LivroCaixaApp.page();
+    static JComponent buildAppointments(LivroCaixaView.MainFrame frame) {
+        JPanel root = LivroCaixaView.page();
         root.setBorder(new EmptyBorder(18, 18, 18, 18));
 
         JPanel upper = new JPanel(new BorderLayout(0, 16)); upper.setOpaque(false);
@@ -121,8 +123,8 @@ final class OperationalListScreens {
         filters.setLayout(new GridBagLayout()); filters.setBorder(new EmptyBorder(17, 18, 17, 18));
         GridBagConstraints g = baseGrid();
 
-        JTextField initial = LivroCaixaApp.modernField("01/11/2026");
-        JTextField end = LivroCaixaApp.modernField("30/11/2026");
+        JTextField initial = LivroCaixaView.modernField("01/11/2026");
+        JTextField end = LivroCaixaView.modernField("30/11/2026");
         JComboBox<String> client = combo(withAll(frame.store.clients.stream().map(c -> c.name).toList()));
         JComboBox<String> type = combo(withAll(frame.store.appointmentTypes));
         JComboBox<String> employee = combo(List.of("Todos", frame.employee, "Bruno Reis"));
@@ -132,7 +134,7 @@ final class OperationalListScreens {
         for (int i = 0; i < labels.length; i++) {
             g.gridx = i; g.gridy = 0; g.weightx = weights[i]; g.fill = GridBagConstraints.HORIZONTAL;
             g.insets = new Insets(0, 0, 7, i == labels.length - 1 ? 0 : 16);
-            filters.add(LivroCaixaApp.title(labels[i], 17), g);
+            filters.add(LivroCaixaView.title(labels[i], 17), g);
             g.gridy = 1; g.insets = new Insets(0, 0, 0, i == labels.length - 1 ? 0 : 16);
             controls[i].setPreferredSize(new Dimension(190, 48)); filters.add(controls[i], g);
         }
@@ -146,12 +148,12 @@ final class OperationalListScreens {
         upper.add(createBar);
         root.add(upper, BorderLayout.NORTH);
 
-        List<LivroCaixaApp.Appointment> source = new ArrayList<>(frame.store.appointments);
-        source.sort(Comparator.comparingInt((LivroCaixaApp.Appointment a) -> a.id).reversed());
+        List<Appointment> source = new ArrayList<>(frame.store.appointments);
+        source.sort(Comparator.comparingInt((Appointment a) -> a.id).reversed());
         DefaultTableModel model = new DefaultTableModel(new String[]{"Código", "Data", "Cliente", "Tipo", "Funcionário", "Ações"}, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
         };
-        for (LivroCaixaApp.Appointment a : source) model.addRow(new Object[]{a.id, LivroCaixaApp.fmt(a.date), a.client, a.type, a.employee, ""});
+        for (Appointment a : source) model.addRow(new Object[]{a.id, LivroCaixaView.fmt(a.date), a.client, a.type, a.employee, ""});
         JTable table = UiKit.modernTable(model); table.setRowHeight(62); table.getTableHeader().setPreferredSize(new Dimension(0, 54));
         table.getColumnModel().getColumn(5).setCellRenderer(new ActionRenderer(ActionKind.APPOINTMENT));
         setWidths(table.getColumnModel(), new int[]{105, 145, 225, 250, 215, 340});
@@ -176,11 +178,11 @@ final class OperationalListScreens {
                 int viewRow = table.rowAtPoint(e.getPoint()), col = table.columnAtPoint(e.getPoint());
                 if (viewRow < 0 || col != 5) return;
                 int row = table.convertRowIndexToModel(viewRow), id = Integer.parseInt(String.valueOf(model.getValueAt(row, 0)));
-                LivroCaixaApp.Appointment appointment = frame.store.appointments.stream().filter(a -> a.id == id).findFirst().orElse(null);
+                Appointment appointment = frame.store.appointments.stream().filter(a -> a.id == id).findFirst().orElse(null);
                 if (appointment == null) return;
                 Rectangle cell = table.getCellRect(viewRow, col, true);
                 if (e.getX() - cell.x < cell.width / 2) frame.appointmentDialog(appointment);
-                else if (appointment.billed) LivroCaixaApp.error(frame, "Esta consulta já foi faturada.");
+                else if (appointment.billed) LivroCaixaView.error(frame, "Esta consulta já foi faturada.");
                 else frame.billingDialog(appointment);
             }
         });
@@ -206,7 +208,7 @@ final class OperationalListScreens {
     }
 
     private static List<String> withAll(List<String> values) {List<String> result = new ArrayList<>(); result.add("Todos"); result.addAll(values); return result;}
-    private static LocalDate safeDate(String value, LocalDate fallback) {try {return LivroCaixaApp.parseDate(value);} catch (Exception ignored) {return fallback;}}
+    private static LocalDate safeDate(String value, LocalDate fallback) {try {return LivroCaixaView.parseDate(value);} catch (Exception ignored) {return fallback;}}
 
     @SuppressWarnings("unchecked") private static TableRowSorter<DefaultTableModel> castSorter(JTable table) {return (TableRowSorter<DefaultTableModel>) table.getRowSorter();}
     private static JButton primary(String text, String icon) {return new UiKit.RoundButton(text, listIcon(icon, 22, Color.WHITE), UiKit.BLUE, Color.WHITE);}

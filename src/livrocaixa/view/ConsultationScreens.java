@@ -1,4 +1,6 @@
-package livrocaixa;
+package livrocaixa.view;
+
+import livrocaixa.model.*;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -18,13 +20,13 @@ import java.time.LocalDate;
 final class ConsultationScreens {
     private ConsultationScreens() {}
 
-    static void showForm(LivroCaixaApp.MainFrame frame, LivroCaixaApp.Appointment edit) {
+    static void showForm(LivroCaixaView.MainFrame frame, Appointment edit) {
         if (frame.store.clients.isEmpty()) {
-            LivroCaixaApp.error(frame, "Cadastre um cliente primeiro.");
+            LivroCaixaView.error(frame, "Cadastre um cliente primeiro.");
             return;
         }
 
-        JPanel page = LivroCaixaApp.page();
+        JPanel page = LivroCaixaView.page();
         UiKit.RoundPanel surface = new UiKit.RoundPanel(17)
                 .fill(new Color(252, 253, 255))
                 .line(new Color(185, 205, 237))
@@ -35,7 +37,7 @@ final class ConsultationScreens {
         JPanel heading = new JPanel();
         heading.setOpaque(false);
         heading.setLayout(new BoxLayout(heading, BoxLayout.Y_AXIS));
-        JLabel title = LivroCaixaApp.title(edit == null ? "Nova consulta" : "Editar consulta", 42);
+        JLabel title = LivroCaixaView.title(edit == null ? "Nova consulta" : "Editar consulta", 42);
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
         heading.add(title);
         heading.add(Box.createVerticalStrut(3));
@@ -61,7 +63,7 @@ final class ConsultationScreens {
         styleCombo(client); styleCombo(type); styleCombo(employee);
         // O texto mais longo precisa caber também na janela padrão de 1500 px.
         type.setFont(new Font("Segoe UI", Font.PLAIN, 19));
-        JTextField date = LivroCaixaApp.modernField(LivroCaixaApp.fmt(edit == null ? LocalDate.of(2026, 11, 5) : edit.date));
+        JTextField date = LivroCaixaView.modernField(LivroCaixaView.fmt(edit == null ? LocalDate.of(2026, 11, 5) : edit.date));
         date.setFont(new Font("Segoe UI", Font.PLAIN, 21));
         JTextArea notes = new JTextArea(edit == null ? "Retorno em 30 dias." : edit.notes, 5, 30);
         notes.setLineWrap(true);
@@ -78,7 +80,7 @@ final class ConsultationScreens {
         JButton newClient = largeSecondary("Novo cliente", "plus", 190);
         JButton newType = largeSecondary("Novo tipo", "plus", 170);
         newClient.addActionListener(e -> frame.clientDialog(null));
-        newType.addActionListener(e -> LivroCaixaApp.info(frame, "No protótipo visual, esta opção abre o cadastro de tipos."));
+        newType.addActionListener(e -> LivroCaixaView.info(frame, "No protótipo visual, esta opção abre o cadastro de tipos."));
 
         JPanel clientLine = lineWithButton(client, newClient);
         JPanel typeLine = lineWithButton(type, newType);
@@ -153,11 +155,11 @@ final class ConsultationScreens {
         saveAndBill.addActionListener(e -> {
             try {
                 // Registro temporário usado somente para abrir a próxima etapa do protótipo.
-                LivroCaixaApp.Appointment demo = new LivroCaixaApp.Appointment(
+                Appointment demo = new Appointment(
                         105,
                         String.valueOf(client.getSelectedItem()),
                         String.valueOf(type.getSelectedItem()),
-                        LivroCaixaApp.parseDate(date.getText()),
+                        LivroCaixaView.parseDate(date.getText()),
                         String.valueOf(employee.getSelectedItem()),
                         new BigDecimal("1400.00"),
                         notes.getText(),
@@ -165,7 +167,7 @@ final class ConsultationScreens {
                 );
                 frame.billingDialog(demo);
             } catch (Exception ex) {
-                LivroCaixaApp.error(frame, "Revise a data informada.");
+                LivroCaixaView.error(frame, "Revise a data informada.");
             }
         });
         actions.add(cancel); actions.add(save); actions.add(saveAndBill);
@@ -240,7 +242,7 @@ final class ConsultationScreens {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(225, 236, 252));
         header.setBorder(new EmptyBorder(14, 18, 14, 18));
-        header.add(LivroCaixaApp.title("Resumo da consulta", 26));
+        header.add(LivroCaixaView.title("Resumo da consulta", 26));
         card.add(header, BorderLayout.NORTH);
         JPanel rows = new JPanel();
         rows.setOpaque(false);

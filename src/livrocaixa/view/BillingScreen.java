@@ -1,4 +1,6 @@
-package livrocaixa;
+package livrocaixa.view;
+
+import livrocaixa.model.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -21,8 +23,8 @@ import java.time.LocalDate;
 final class BillingScreen {
     private BillingScreen() {}
 
-    static void show(LivroCaixaApp.MainFrame frame, LivroCaixaApp.Appointment appointment) {
-        JPanel page = LivroCaixaApp.page();
+    static void show(LivroCaixaView.MainFrame frame, Appointment appointment) {
+        JPanel page = LivroCaixaView.page();
         UiKit.RoundPanel surface = new UiKit.RoundPanel(17)
                 .fill(new Color(252, 253, 255))
                 .line(new Color(174, 198, 234))
@@ -32,17 +34,17 @@ final class BillingScreen {
 
         JPanel top = new JPanel(new BorderLayout(0, 12));
         top.setOpaque(false);
-        top.add(LivroCaixaApp.title("Faturamento da consulta", 41), BorderLayout.NORTH);
+        top.add(LivroCaixaView.title("Faturamento da consulta", 41), BorderLayout.NORTH);
         top.add(invoiceBanner(appointment));
         surface.add(top, BorderLayout.NORTH);
 
-        JLabel informed = summaryValue(LivroCaixaApp.money(appointment.value), UiKit.INK, 22);
-        JLabel remaining = summaryValue(LivroCaixaApp.money(BigDecimal.ZERO), new Color(6, 128, 28), 24);
+        JLabel informed = summaryValue(LivroCaixaView.money(appointment.value), UiKit.INK, 22);
+        JLabel remaining = summaryValue(LivroCaixaView.money(BigDecimal.ZERO), new Color(6, 128, 28), 24);
         JComponent summary = summaryPanel(appointment.value, informed, remaining);
 
         JPanel left = new JPanel(new BorderLayout(0, 10));
         left.setOpaque(false);
-        JLabel typeTitle = LivroCaixaApp.title("Tipo de pagamento", 25);
+        JLabel typeTitle = LivroCaixaView.title("Tipo de pagamento", 25);
         left.add(typeTitle, BorderLayout.NORTH);
 
         JPanel leftBody = new JPanel(new BorderLayout(0, 12));
@@ -63,7 +65,7 @@ final class BillingScreen {
         cards.setOpaque(false);
 
         DefaultTableModel cashModel = new DefaultTableModel(
-                new Object[][]{{"PIX", LivroCaixaApp.money(new BigDecimal("900.00")), ""}, {"Dinheiro", LivroCaixaApp.money(new BigDecimal("500.00")), ""}},
+                new Object[][]{{"PIX", LivroCaixaView.money(new BigDecimal("900.00")), ""}, {"Dinheiro", LivroCaixaView.money(new BigDecimal("500.00")), ""}},
                 new String[]{"Forma de pagamento", "Valor", "Ação"}) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -75,7 +77,7 @@ final class BillingScreen {
         JPanel cashPanel = new JPanel();
         cashPanel.setOpaque(false);
         cashPanel.setLayout(new BoxLayout(cashPanel, BoxLayout.Y_AXIS));
-        JLabel formsTitle = LivroCaixaApp.title("Formas de pagamento", 25);
+        JLabel formsTitle = LivroCaixaView.title("Formas de pagamento", 25);
         formsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         cashPanel.add(formsTitle);
         cashPanel.add(Box.createVerticalStrut(9));
@@ -121,12 +123,12 @@ final class BillingScreen {
         Runnable refreshCash = () -> {
             BigDecimal total = BigDecimal.ZERO;
             for (int i = 0; i < cashModel.getRowCount(); i++) {
-                try { total = total.add(LivroCaixaApp.parseMoney(String.valueOf(cashModel.getValueAt(i, 1)))); }
+                try { total = total.add(LivroCaixaView.parseMoney(String.valueOf(cashModel.getValueAt(i, 1)))); }
                 catch (Exception ignored) {}
             }
-            informed.setText(LivroCaixaApp.money(total));
+            informed.setText(LivroCaixaView.money(total));
             BigDecimal rest = appointment.value.subtract(total);
-            remaining.setText(LivroCaixaApp.money(rest));
+            remaining.setText(LivroCaixaView.money(rest));
             remaining.setForeground(rest.signum() == 0 ? new Color(6, 128, 28) : UiKit.RED);
         };
         cashTable.addMouseListener(new MouseAdapter() {
@@ -139,7 +141,7 @@ final class BillingScreen {
                 }
             }
         });
-        addMethod.addActionListener(e -> LivroCaixaApp.info(frame, "No protótipo visual, esta opção adiciona outra forma de pagamento."));
+        addMethod.addActionListener(e -> LivroCaixaView.info(frame, "No protótipo visual, esta opção adiciona outra forma de pagamento."));
         cash.addActionListener(e -> { modes.show(cards, "cash"); refreshCash.run(); });
         term.addActionListener(e -> {
             modes.show(cards, "term");
@@ -165,15 +167,15 @@ final class BillingScreen {
         frame.showCustom("Consultas", page);
     }
 
-    private static JComponent invoiceBanner(LivroCaixaApp.Appointment a) {
+    private static JComponent invoiceBanner(Appointment a) {
         UiKit.RoundPanel banner = new UiKit.RoundPanel(12).fill(new Color(229, 239, 255)).shadow(false);
         banner.setBorder(new EmptyBorder(12, 15, 12, 15));
         banner.setLayout(new GridLayout(1, 5));
         banner.add(bannerCell("Consulta nº " + a.id, true));
         banner.add(bannerCell("Cliente:  " + a.client, false));
         banner.add(bannerCell("Tipo:  " + a.type, false));
-        banner.add(bannerCell("Data:  " + LivroCaixaApp.fmt(a.date), false));
-        banner.add(bannerCell("Valor total:  " + LivroCaixaApp.money(a.value), false));
+        banner.add(bannerCell("Data:  " + LivroCaixaView.fmt(a.date), false));
+        banner.add(bannerCell("Valor total:  " + LivroCaixaView.money(a.value), false));
         banner.setPreferredSize(new Dimension(0, 60));
         return banner;
     }
@@ -213,13 +215,13 @@ final class BillingScreen {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(225, 236, 252));
         header.setBorder(new EmptyBorder(12, 17, 12, 17));
-        header.add(LivroCaixaApp.title("Resumo", 30));
+        header.add(LivroCaixaView.title("Resumo", 30));
         card.add(header, BorderLayout.NORTH);
         JPanel rows = new JPanel();
         rows.setOpaque(false);
         rows.setLayout(new BoxLayout(rows, BoxLayout.Y_AXIS));
         rows.setBorder(new EmptyBorder(9, 17, 12, 17));
-        addSummaryLine(rows, "Valor da consulta", summaryValue(LivroCaixaApp.money(total), UiKit.INK, 22));
+        addSummaryLine(rows, "Valor da consulta", summaryValue(LivroCaixaView.money(total), UiKit.INK, 22));
         addSummaryLine(rows, "Total informado", informed);
         addSummaryLine(rows, "Saldo restante", remaining);
         card.add(rows);
@@ -255,7 +257,7 @@ final class BillingScreen {
         info.setLayout(new BorderLayout(12, 0));
         info.setBorder(new EmptyBorder(10, 16, 10, 16));
         info.add(new JLabel(UiKit.vectorIcon("info", 29, new Color(27, 100, 229))), BorderLayout.WEST);
-        JLabel text = new JLabel("Se houver saldo restante, será criada uma parcela com vencimento em " + LivroCaixaApp.fmt(date) + ".");
+        JLabel text = new JLabel("Se houver saldo restante, será criada uma parcela com vencimento em " + LivroCaixaView.fmt(date) + ".");
         text.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         text.setForeground(new Color(20, 38, 70));
         info.add(text);
@@ -263,14 +265,14 @@ final class BillingScreen {
         return info;
     }
 
-    private static TermComponents termPanel(LivroCaixaApp.Appointment appointment) {
+    private static TermComponents termPanel(Appointment appointment) {
         JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setOpaque(false);
         JPanel fields = new JPanel(new GridLayout(2, 3, 10, 4));
         fields.setOpaque(false);
         JTextField entry = largeField("200,00");
-        JTextField entryDate = largeField(LivroCaixaApp.fmt(appointment.date));
-        JTextField firstDue = largeField(LivroCaixaApp.fmt(appointment.date.plusDays(30)));
+        JTextField entryDate = largeField(LivroCaixaView.fmt(appointment.date));
+        JTextField firstDue = largeField(LivroCaixaView.fmt(appointment.date.plusDays(30)));
         JTextField count = largeField("4");
         JComboBox<String> period = new JComboBox<>(new String[]{"Mensal", "Quinzenal", "Semanal"});
         period.setFont(new Font("Segoe UI", Font.PLAIN, 18));
@@ -306,7 +308,7 @@ final class BillingScreen {
         preview.setOpaque(false);
         JPanel previewHeader = new JPanel(new BorderLayout(12, 0));
         previewHeader.setOpaque(false);
-        previewHeader.add(LivroCaixaApp.title("Prévia das parcelas", 21));
+        previewHeader.add(LivroCaixaView.title("Prévia das parcelas", 21));
         previewHeader.add(generate, BorderLayout.EAST);
         preview.add(previewHeader, BorderLayout.NORTH);
         preview.add(scroll);
@@ -315,7 +317,7 @@ final class BillingScreen {
     }
 
     private static JTextField largeField(String value) {
-        JTextField field = LivroCaixaApp.modernField(value);
+        JTextField field = LivroCaixaView.modernField(value);
         field.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         field.setPreferredSize(new Dimension(130, 34));
         return field;
@@ -332,21 +334,21 @@ final class BillingScreen {
     }
 
     /** Gera apenas a prévia visual das parcelas; não cria registros persistentes. */
-    private static void generateTermRows(LivroCaixaApp.Appointment appointment, TermComponents c, JLabel informed, JLabel remaining) {
+    private static void generateTermRows(Appointment appointment, TermComponents c, JLabel informed, JLabel remaining) {
         try {
-            BigDecimal entry = LivroCaixaApp.parseMoney(c.entry.getText());
+            BigDecimal entry = LivroCaixaView.parseMoney(c.entry.getText());
             int count = Integer.parseInt(c.count.getText().trim());
-            LocalDate first = LivroCaixaApp.parseDate(c.firstDue.getText());
+            LocalDate first = LivroCaixaView.parseDate(c.firstDue.getText());
             c.model.setRowCount(0);
-            c.model.addRow(new Object[]{"Entrada", "Entrada", c.entryDate.getText(), LivroCaixaApp.money(entry), "Pendente"});
+            c.model.addRow(new Object[]{"Entrada", "Entrada", c.entryDate.getText(), LivroCaixaView.money(entry), "Pendente"});
             BigDecimal rest = appointment.value.subtract(entry);
             BigDecimal each = rest.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
             for (int i = 1; i <= count; i++) {
                 BigDecimal value = i == count ? rest.subtract(each.multiply(BigDecimal.valueOf(count - 1))) : each;
-                c.model.addRow(new Object[]{i + "/" + count, c.period.getSelectedItem(), LivroCaixaApp.fmt(first.plusMonths(i - 1)), LivroCaixaApp.money(value), "Pendente"});
+                c.model.addRow(new Object[]{i + "/" + count, c.period.getSelectedItem(), LivroCaixaView.fmt(first.plusMonths(i - 1)), LivroCaixaView.money(value), "Pendente"});
             }
-            informed.setText(LivroCaixaApp.money(appointment.value));
-            remaining.setText(LivroCaixaApp.money(BigDecimal.ZERO));
+            informed.setText(LivroCaixaView.money(appointment.value));
+            remaining.setText(LivroCaixaView.money(BigDecimal.ZERO));
             remaining.setForeground(new Color(6, 128, 28));
         } catch (Exception ex) {
             informed.setText("Revise os dados");

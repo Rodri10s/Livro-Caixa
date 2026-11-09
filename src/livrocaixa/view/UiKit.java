@@ -1,4 +1,6 @@
-package livrocaixa;
+package livrocaixa.view;
+
+import livrocaixa.model.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

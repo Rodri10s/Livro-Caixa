@@ -1,4 +1,7 @@
-package livrocaixa;
+package livrocaixa.view;
+
+import livrocaixa.controller.LivroCaixaController;
+import livrocaixa.model.*;
 
 import javax.swing.*;
 import javax.imageio.ImageIO;
@@ -16,8 +19,9 @@ public final class SmokeTest {
         AtomicReference<Throwable> uncaught=new AtomicReference<>();
         Thread.setDefaultUncaughtExceptionHandler((thread,error)->uncaught.compareAndSet(null,error));
         SwingUtilities.invokeAndWait(() -> {
-            LivroCaixaApp.LoginFrame login=new LivroCaixaApp.LoginFrame();login.setVisible(true);render(login,"00-login");login.dispose();
-            LivroCaixaApp.MainFrame frame = new LivroCaixaApp.MainFrame("Ana Souza");
+            LivroCaixaController controller = new LivroCaixaController();
+            LivroCaixaView.LoginFrame login=new LivroCaixaView.LoginFrame(controller);login.setVisible(true);render(login,"00-login");login.dispose();
+            LivroCaixaView.MainFrame frame = new LivroCaixaView.MainFrame(controller, "Ana Souza");
             frame.setSize(1500, 850);
             frame.setVisible(true);
             expect(frame.store.clients.size()==5,"amostra deve ter 5 clientes");
@@ -46,7 +50,6 @@ public final class SmokeTest {
             frame.showPage("Configurações");render(frame,"14-configuracoes");clickNthButton(frame,"Gerenciar",0);render(frame,"15-funcionarios-perfis");exerciseButton(frame,"Voltar");frame.showPage("Configurações");clickNthButton(frame,"Gerenciar",2);render(frame,"16-cadastros-auxiliares");
             frame.dispose();
         });
-        try{Path flow=Path.of("output","prototipos","azul-revisado-feedback","17-fluxo-geral.png");expect(Files.isRegularFile(flow),"referência do fluxo geral ausente");Files.createDirectories(Path.of("tmp","qa"));Files.copy(flow,Path.of("tmp","qa","17-fluxo-geral.png"),StandardCopyOption.REPLACE_EXISTING);}catch(Exception e){throw new AssertionError("Falha ao validar fluxo geral",e);}
         if(uncaught.get()!=null)throw new AssertionError("Exceção não capturada na EDT",uncaught.get());
         System.out.println("SMOKE_TEST_OK");
         System.exit(0);

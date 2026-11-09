@@ -1,4 +1,6 @@
-package livrocaixa;
+package livrocaixa.view;
+
+import livrocaixa.model.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -19,8 +21,8 @@ final class FinanceListScreens {
 
     private FinanceListScreens() {}
 
-    static JComponent buildReceivables(LivroCaixaApp.MainFrame frame) {
-        JPanel page = LivroCaixaApp.page();
+    static JComponent buildReceivables(LivroCaixaView.MainFrame frame) {
+        JPanel page = LivroCaixaView.page();
         UiKit.RoundPanel surface = new UiKit.RoundPanel(16).fill(Color.WHITE);
         surface.setLayout(new BorderLayout(0, 15));
         surface.setBorder(new EmptyBorder(17, 18, 17, 18));
@@ -28,7 +30,7 @@ final class FinanceListScreens {
         JPanel top = new JPanel();
         top.setOpaque(false);
         top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
-        JLabel heading = LivroCaixaApp.title("Contas a receber", 29);
+        JLabel heading = LivroCaixaView.title("Contas a receber", 29);
         heading.setAlignmentX(Component.LEFT_ALIGNMENT);
         top.add(heading);
         top.add(Box.createVerticalStrut(14));
@@ -37,21 +39,21 @@ final class FinanceListScreens {
         cards.setOpaque(false);
         cards.setMaximumSize(new Dimension(Integer.MAX_VALUE, 118));
         cards.setPreferredSize(new Dimension(0, 118));
-        cards.add(financialCard("A receber", LivroCaixaApp.money(frame.store.pending()), UiKit.BLUE,
+        cards.add(financialCard("A receber", LivroCaixaView.money(frame.store.pending()), UiKit.BLUE,
                 new Color(236, 243, 255), "coins"));
         BigDecimal overdue = frame.store.installments.stream()
                 .filter(x -> !x.cancelled && x.due.isBefore(REFERENCE_DATE) && x.paid.compareTo(x.value) < 0)
                 .map(x -> x.value.subtract(x.paid)).reduce(BigDecimal.ZERO, BigDecimal::add);
-        cards.add(financialCard("Vencido", LivroCaixaApp.money(overdue), new Color(205, 23, 31),
+        cards.add(financialCard("Vencido", LivroCaixaView.money(overdue), new Color(205, 23, 31),
                 new Color(255, 232, 233), "warning"));
-        cards.add(financialCard("Recebido no mês", LivroCaixaApp.money(frame.store.income()), new Color(8, 119, 30),
+        cards.add(financialCard("Recebido no mês", LivroCaixaView.money(frame.store.income()), new Color(8, 119, 30),
                 new Color(229, 247, 227), "check"));
         cards.setAlignmentX(Component.LEFT_ALIGNMENT);
         top.add(cards);
         top.add(Box.createVerticalStrut(14));
 
-        JTextField start = LivroCaixaApp.modernField("01/11/2026");
-        JTextField end = LivroCaixaApp.modernField("30/11/2026");
+        JTextField start = LivroCaixaView.modernField("01/11/2026");
+        JTextField end = LivroCaixaView.modernField("30/11/2026");
         JComboBox<String> client = new JComboBox<>();
         client.addItem("Todos");
         frame.store.clients.forEach(c -> client.addItem(c.name));
@@ -83,7 +85,7 @@ final class FinanceListScreens {
         table.getColumnModel().getColumn(5).setPreferredWidth(125);
         table.getColumnModel().getColumn(6).setPreferredWidth(330);
         table.getColumnModel().getColumn(6).setCellRenderer(new DualActionRenderer("Registrar pagamento", "Detalhes", true));
-        List<LivroCaixaApp.Installment> visible = new ArrayList<>();
+        List<Installment> visible = new ArrayList<>();
 
         Runnable refresh = () -> {
             LocalDate from = parseDateOr(start.getText(), LocalDate.MIN);
@@ -98,7 +100,7 @@ final class FinanceListScreens {
                         if (!"Todos".equals(chosenStatus) && !state.equals(chosenStatus)) return;
                         visible.add(x);
                         model.addRow(new Object[]{x.client, String.format("%03d", x.appointmentId), x.label,
-                                LivroCaixaApp.fmt(x.due), LivroCaixaApp.money(x.value), state, ""});
+                                LivroCaixaView.fmt(x.due), LivroCaixaView.money(x.value), state, ""});
                     });
         };
         apply.addActionListener(e -> refresh.run());
@@ -109,15 +111,15 @@ final class FinanceListScreens {
                 if (viewRow < 0 || col != 6) return;
                 int row = table.convertRowIndexToModel(viewRow);
                 if (row >= visible.size()) return;
-                LivroCaixaApp.Installment item = visible.get(row);
+                Installment item = visible.get(row);
                 Rectangle cell = table.getCellRect(viewRow, col, true);
                 if (e.getX() - cell.x < cell.width * .68) {
                     if (item.paid.compareTo(item.value) >= 0) frame.paymentConfirmed(item); else frame.paymentDialog(item);
                 } else {
                     JOptionPane.showMessageDialog(frame,
                             "Cliente: " + item.client + "\nFatura: " + item.appointmentId + "\nParcela: " + item.label
-                                    + "\nVencimento: " + LivroCaixaApp.fmt(item.due) + "\nValor: " + LivroCaixaApp.money(item.value)
-                                    + "\nRecebido: " + LivroCaixaApp.money(item.paid),
+                                    + "\nVencimento: " + LivroCaixaView.fmt(item.due) + "\nValor: " + LivroCaixaView.money(item.value)
+                                    + "\nRecebido: " + LivroCaixaView.money(item.paid),
                             "Detalhes da parcela", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
@@ -130,16 +132,16 @@ final class FinanceListScreens {
         return page;
     }
 
-    static JComponent buildExpenses(LivroCaixaApp.MainFrame frame) {
-        JPanel page = LivroCaixaApp.page();
+    static JComponent buildExpenses(LivroCaixaView.MainFrame frame) {
+        JPanel page = LivroCaixaView.page();
         UiKit.RoundPanel surface = new UiKit.RoundPanel(16).fill(Color.WHITE);
         surface.setLayout(new BorderLayout(0, 12));
         surface.setBorder(new EmptyBorder(17, 18, 17, 18));
 
         JPanel top = new JPanel();
         top.setOpaque(false); top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
-        JLabel heading = LivroCaixaApp.title("Controle de saídas", 29); heading.setAlignmentX(Component.LEFT_ALIGNMENT); top.add(heading); top.add(Box.createVerticalStrut(12));
-        JTextField start = LivroCaixaApp.modernField("01/11/2026"), end = LivroCaixaApp.modernField("30/11/2026");
+        JLabel heading = LivroCaixaView.title("Controle de saídas", 29); heading.setAlignmentX(Component.LEFT_ALIGNMENT); top.add(heading); top.add(Box.createVerticalStrut(12));
+        JTextField start = LivroCaixaView.modernField("01/11/2026"), end = LivroCaixaView.modernField("30/11/2026");
         JComboBox<String> type = new JComboBox<>(); type.addItem("Todos"); frame.store.expenseTypes.forEach(type::addItem);
         JComboBox<String> employee = new JComboBox<>(new String[]{"Todos", frame.employee, "Bruno Reis"});
         UiKit.RoundPanel filters = new UiKit.RoundPanel(14).fill(new Color(245, 248, 255)).shadow(false);
@@ -155,21 +157,21 @@ final class FinanceListScreens {
 
         String[] columns={"Código","Data","Tipo de saída","Funcionário","Valor","Ações"};DefaultTableModel model=readOnlyModel(columns);JTable table=UiKit.modernTable(model);table.setRowHeight(43);
         table.getColumnModel().getColumn(0).setMaxWidth(115);table.getColumnModel().getColumn(1).setPreferredWidth(145);table.getColumnModel().getColumn(4).setPreferredWidth(165);table.getColumnModel().getColumn(5).setPreferredWidth(225);table.getColumnModel().getColumn(5).setCellRenderer(new DualActionRenderer("Editar","Excluir",false));
-        List<LivroCaixaApp.Expense> visible=new ArrayList<>();JLabel totalValue=LivroCaixaApp.title(LivroCaixaApp.money(BigDecimal.ZERO),22);totalValue.setForeground(Color.WHITE);
-        Runnable refresh=()->{LocalDate from=parseDateOr(start.getText(),LocalDate.MIN),to=parseDateOr(end.getText(),LocalDate.MAX);String chosenType=String.valueOf(type.getSelectedItem()),chosenEmployee=String.valueOf(employee.getSelectedItem());visible.clear();model.setRowCount(0);BigDecimal[] total={BigDecimal.ZERO};frame.store.expenses.stream().filter(x->!x.date.isBefore(from)&&!x.date.isAfter(to)).filter(x->"Todos".equals(chosenType)||x.type.equals(chosenType)).filter(x->"Todos".equals(chosenEmployee)||x.employee.equals(chosenEmployee)).forEach(x->{visible.add(x);total[0]=total[0].add(x.value);model.addRow(new Object[]{String.format("%03d",x.id),LivroCaixaApp.fmt(x.date),x.type,x.employee,LivroCaixaApp.money(x.value),""});});totalValue.setText(LivroCaixaApp.money(total[0]));};
+        List<Expense> visible=new ArrayList<>();JLabel totalValue=LivroCaixaView.title(LivroCaixaView.money(BigDecimal.ZERO),22);totalValue.setForeground(Color.WHITE);
+        Runnable refresh=()->{LocalDate from=parseDateOr(start.getText(),LocalDate.MIN),to=parseDateOr(end.getText(),LocalDate.MAX);String chosenType=String.valueOf(type.getSelectedItem()),chosenEmployee=String.valueOf(employee.getSelectedItem());visible.clear();model.setRowCount(0);BigDecimal[] total={BigDecimal.ZERO};frame.store.expenses.stream().filter(x->!x.date.isBefore(from)&&!x.date.isAfter(to)).filter(x->"Todos".equals(chosenType)||x.type.equals(chosenType)).filter(x->"Todos".equals(chosenEmployee)||x.employee.equals(chosenEmployee)).forEach(x->{visible.add(x);total[0]=total[0].add(x.value);model.addRow(new Object[]{String.format("%03d",x.id),LivroCaixaView.fmt(x.date),x.type,x.employee,LivroCaixaView.money(x.value),""});});totalValue.setText(LivroCaixaView.money(total[0]));};
         apply.addActionListener(e->refresh.run());clear.addActionListener(e->{start.setText("01/11/2026");end.setText("30/11/2026");type.setSelectedIndex(0);employee.setSelectedIndex(0);refresh.run();});
-        table.addMouseListener(new MouseAdapter(){@Override public void mouseClicked(MouseEvent e){int viewRow=table.rowAtPoint(e.getPoint()),col=table.columnAtPoint(e.getPoint());if(viewRow<0||col!=5)return;int row=table.convertRowIndexToModel(viewRow);if(row>=visible.size())return;LivroCaixaApp.Expense item=visible.get(row);Rectangle cell=table.getCellRect(viewRow,col,true);if(e.getX()-cell.x<cell.width/2)frame.expenseDialog(item);else if(LivroCaixaApp.confirm(frame,"Excluir esta saída?")){frame.store.expenses.remove(item);frame.store.save();refresh.run();}}});
+        table.addMouseListener(new MouseAdapter(){@Override public void mouseClicked(MouseEvent e){int viewRow=table.rowAtPoint(e.getPoint()),col=table.columnAtPoint(e.getPoint());if(viewRow<0||col!=5)return;int row=table.convertRowIndexToModel(viewRow);if(row>=visible.size())return;Expense item=visible.get(row);Rectangle cell=table.getCellRect(viewRow,col,true);if(e.getX()-cell.x<cell.width/2)frame.expenseDialog(item);else if(LivroCaixaView.confirm(frame,"Excluir esta saída?")){frame.store.expenses.remove(item);frame.store.save();refresh.run();}}});
         refresh.run();JScrollPane scroll=new JScrollPane(table);scroll.setBorder(new LineBorder(UiKit.LINE));surface.add(scroll);
-        JPanel footer=new JPanel(new FlowLayout(FlowLayout.RIGHT,0,0));footer.setOpaque(false);UiKit.RoundPanel totalBox=new UiKit.RoundPanel(13).fill(new Color(244,248,255)).shadow(false);totalBox.setLayout(new BorderLayout());totalBox.setBorder(new EmptyBorder(5,18,5,5));JLabel totalLabel=LivroCaixaApp.title("Total do período",18);totalLabel.setBorder(new EmptyBorder(0,0,0,20));totalBox.add(totalLabel);UiKit.RoundPanel blue=new UiKit.RoundPanel(11).fill(new Color(25,68,210)).line(null).shadow(false);blue.setBorder(new EmptyBorder(8,20,8,20));blue.add(totalValue);totalBox.add(blue,BorderLayout.EAST);footer.add(totalBox);surface.add(footer,BorderLayout.SOUTH);
+        JPanel footer=new JPanel(new FlowLayout(FlowLayout.RIGHT,0,0));footer.setOpaque(false);UiKit.RoundPanel totalBox=new UiKit.RoundPanel(13).fill(new Color(244,248,255)).shadow(false);totalBox.setLayout(new BorderLayout());totalBox.setBorder(new EmptyBorder(5,18,5,5));JLabel totalLabel=LivroCaixaView.title("Total do período",18);totalLabel.setBorder(new EmptyBorder(0,0,0,20));totalBox.add(totalLabel);UiKit.RoundPanel blue=new UiKit.RoundPanel(11).fill(new Color(25,68,210)).line(null).shadow(false);blue.setBorder(new EmptyBorder(8,20,8,20));blue.add(totalValue);totalBox.add(blue,BorderLayout.EAST);footer.add(totalBox);surface.add(footer,BorderLayout.SOUTH);
         page.add(surface);return page;
     }
 
-    private static UiKit.RoundPanel financialCard(String label,String value,Color color,Color fill,String icon){UiKit.RoundPanel card=new UiKit.RoundPanel(15).fill(fill).line(new Color(color.getRed(),color.getGreen(),color.getBlue(),105)).shadow(false);card.setLayout(new BorderLayout(14,0));card.setBorder(new EmptyBorder(17,22,17,22));JLabel glyph=new JLabel(UiKit.vectorIcon(icon,48,color));glyph.setBorder(new EmptyBorder(0,0,0,18));card.add(glyph,BorderLayout.WEST);JPanel text=new JPanel();text.setOpaque(false);text.setLayout(new BoxLayout(text,BoxLayout.Y_AXIS));text.add(LivroCaixaApp.title(label,20));text.add(Box.createVerticalStrut(8));JLabel amount=LivroCaixaApp.title(value,28);amount.setForeground(color);text.add(amount);card.add(text);return card;}
+    private static UiKit.RoundPanel financialCard(String label,String value,Color color,Color fill,String icon){UiKit.RoundPanel card=new UiKit.RoundPanel(15).fill(fill).line(new Color(color.getRed(),color.getGreen(),color.getBlue(),105)).shadow(false);card.setLayout(new BorderLayout(14,0));card.setBorder(new EmptyBorder(17,22,17,22));JLabel glyph=new JLabel(UiKit.vectorIcon(icon,48,color));glyph.setBorder(new EmptyBorder(0,0,0,18));card.add(glyph,BorderLayout.WEST);JPanel text=new JPanel();text.setOpaque(false);text.setLayout(new BoxLayout(text,BoxLayout.Y_AXIS));text.add(LivroCaixaView.title(label,20));text.add(Box.createVerticalStrut(8));JLabel amount=LivroCaixaView.title(value,28);amount.setForeground(color);text.add(amount);card.add(text);return card;}
     private static GridBagConstraints constraints(){GridBagConstraints gc=new GridBagConstraints();gc.gridy=0;gc.weighty=1;gc.fill=GridBagConstraints.HORIZONTAL;gc.anchor=GridBagConstraints.WEST;return gc;}
     private static void addFilter(JPanel target,GridBagConstraints base,int x,String label,JComponent field,double weight){GridBagConstraints gc=(GridBagConstraints)base.clone();gc.gridx=x;gc.weightx=weight;gc.insets=new Insets(0,x==0?0:8,0,0);JPanel box=new JPanel(new BorderLayout(0,4));box.setOpaque(false);JLabel l=new JLabel(label);l.setFont(new Font("Segoe UI",Font.BOLD,15));box.add(l,BorderLayout.NORTH);field.setPreferredSize(new Dimension(150,39));box.add(field);target.add(box,gc);}
     private static DefaultTableModel readOnlyModel(String[] columns){return new DefaultTableModel(columns,0){@Override public boolean isCellEditable(int r,int c){return false;}};}
-    private static LocalDate parseDateOr(String value,LocalDate fallback){try{return LivroCaixaApp.parseDate(value);}catch(Exception e){return fallback;}}
-    private static String installmentStatus(LivroCaixaApp.Installment x){if(x.cancelled)return "Cancelada";if(x.paid.compareTo(x.value)>=0)return "Pago";return x.due.isBefore(REFERENCE_DATE)?"Vencido":"Pendente";}
+    private static LocalDate parseDateOr(String value,LocalDate fallback){try{return LivroCaixaView.parseDate(value);}catch(Exception e){return fallback;}}
+    private static String installmentStatus(Installment x){if(x.cancelled)return "Cancelada";if(x.paid.compareTo(x.value)>=0)return "Pago";return x.due.isBefore(REFERENCE_DATE)?"Vencido":"Pendente";}
 
     private static final class DualActionRenderer implements TableCellRenderer {
         private final String first,second;private final boolean primaryFirst;

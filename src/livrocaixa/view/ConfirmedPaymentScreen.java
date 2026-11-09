@@ -1,4 +1,6 @@
-package livrocaixa;
+package livrocaixa.view;
+
+import livrocaixa.model.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,8 +18,8 @@ import java.util.List;
 final class ConfirmedPaymentScreen {
     private ConfirmedPaymentScreen() {}
 
-    static void show(LivroCaixaApp.MainFrame frame, LivroCaixaApp.Installment item) {
-        JPanel page = LivroCaixaApp.page();
+    static void show(LivroCaixaView.MainFrame frame, Installment item) {
+        JPanel page = LivroCaixaView.page();
         UiKit.RoundPanel surface = new UiKit.RoundPanel(16).fill(Color.WHITE);
         surface.setLayout(new BorderLayout(0, 12));
         surface.setBorder(new EmptyBorder(15, 18, 15, 18));
@@ -25,7 +27,7 @@ final class ConfirmedPaymentScreen {
         JPanel top = new JPanel();
         top.setOpaque(false);
         top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
-        top.add(LivroCaixaApp.title("Pagamento confirmado", 29));
+        top.add(LivroCaixaView.title("Pagamento confirmado", 29));
         top.add(Box.createVerticalStrut(10));
         UiKit.RoundPanel success = new UiKit.RoundPanel(13).fill(new Color(224, 249, 222)).line(new Color(76, 190, 78)).shadow(false);
         success.setLayout(new BorderLayout());
@@ -40,7 +42,7 @@ final class ConfirmedPaymentScreen {
         top.add(detailBanner(item));
         surface.add(top, BorderLayout.NORTH);
 
-        List<LivroCaixaApp.Payment> payments = new ArrayList<>();
+        List<Payment> payments = new ArrayList<>();
         frame.store.payments.stream()
                 .filter(p -> p.appointmentId == item.appointmentId && p.label.equals(item.label) && !p.reversed)
                 .forEach(payments::add);
@@ -76,9 +78,9 @@ final class ConfirmedPaymentScreen {
         actions.setOpaque(false);
         JButton invoice = UiKit.secondary("Ver fatura", "document");
         JButton back = UiKit.primary("Voltar para contas a receber", "document");
-        invoice.addActionListener(e -> LivroCaixaApp.info(frame,
+        invoice.addActionListener(e -> LivroCaixaView.info(frame,
                 "Fatura " + item.appointmentId + "\nCliente: " + item.client + "\nParcela: " + item.label
-                        + "\nValor: " + LivroCaixaApp.money(item.value)));
+                        + "\nValor: " + LivroCaixaView.money(item.value)));
         back.addActionListener(e -> frame.showPage("Contas a receber"));
         actions.add(invoice);
         actions.add(back);
@@ -88,14 +90,14 @@ final class ConfirmedPaymentScreen {
         frame.showCustom("Contas a receber", page);
     }
 
-    private static JComponent detailBanner(LivroCaixaApp.Installment item) {
+    private static JComponent detailBanner(Installment item) {
         UiKit.RoundPanel banner = new UiKit.RoundPanel(12).fill(new Color(232, 241, 255)).shadow(false);
         banner.setBorder(new EmptyBorder(11, 15, 11, 15));
         banner.setLayout(new GridLayout(1, 5));
         banner.add(pair("Cliente:", item.client));
         banner.add(pair("Fatura:", String.valueOf(item.appointmentId)));
         banner.add(pair("Parcela:", item.label));
-        banner.add(pair("Valor liquidado:", LivroCaixaApp.money(item.paid)));
+        banner.add(pair("Valor liquidado:", LivroCaixaView.money(item.paid)));
         JPanel status = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
         status.setOpaque(false);
         JLabel label = new JLabel("Status:");
@@ -117,25 +119,25 @@ final class ConfirmedPaymentScreen {
         p.setOpaque(false);
         JLabel a = new JLabel(name);
         a.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        JLabel b = LivroCaixaApp.title(value, 18);
+        JLabel b = LivroCaixaView.title(value, 18);
         b.setForeground(new Color(23, 58, 145));
         p.add(a);
         p.add(b);
         return p;
     }
 
-    private static JComponent historyPanel(LivroCaixaApp.MainFrame frame, LivroCaixaApp.Installment item,
-                                           List<LivroCaixaApp.Payment> payments) {
+    private static JComponent historyPanel(LivroCaixaView.MainFrame frame, Installment item,
+                                           List<Payment> payments) {
         UiKit.RoundPanel card = new UiKit.RoundPanel(13).fill(new Color(248, 250, 255)).shadow(false);
         card.setLayout(new BorderLayout(0, 8));
         card.setBorder(new EmptyBorder(11, 11, 11, 11));
-        card.add(LivroCaixaApp.title("Histórico de pagamentos", 21), BorderLayout.NORTH);
+        card.add(LivroCaixaView.title("Histórico de pagamentos", 21), BorderLayout.NORTH);
         DefaultTableModel model = new DefaultTableModel(new String[]{"Data", "Forma de pagamento", "Valor", "Desconto", "Ações"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (LivroCaixaApp.Payment payment : payments) {
-            model.addRow(new Object[]{LivroCaixaApp.fmt(payment.date), payment.method,
-                    LivroCaixaApp.money(payment.value), LivroCaixaApp.money(payment.discount), ""});
+        for (Payment payment : payments) {
+            model.addRow(new Object[]{LivroCaixaView.fmt(payment.date), payment.method,
+                    LivroCaixaView.money(payment.value), LivroCaixaView.money(payment.discount), ""});
         }
         JTable table = UiKit.modernTable(model);
         table.setRowHeight(52);
@@ -148,8 +150,8 @@ final class ConfirmedPaymentScreen {
                 if (viewRow < 0 || column != 4) return;
                 int row = table.convertRowIndexToModel(viewRow);
                 if (row >= payments.size()) return;
-                LivroCaixaApp.Payment payment = payments.get(row);
-                if (LivroCaixaApp.confirm(frame, "Desfazer esta baixa?")) {
+                Payment payment = payments.get(row);
+                if (LivroCaixaView.confirm(frame, "Desfazer esta baixa?")) {
                     payment.reversed = true;
                     item.paid = item.paid.subtract(payment.value.add(payment.discount)).max(BigDecimal.ZERO);
                     frame.paymentConfirmed(item);
@@ -162,14 +164,14 @@ final class ConfirmedPaymentScreen {
         return card;
     }
 
-    private static JComponent summaryPanel(LivroCaixaApp.Installment item, List<LivroCaixaApp.Payment> payments) {
+    private static JComponent summaryPanel(Installment item, List<Payment> payments) {
         BigDecimal received = payments.stream().map(p -> p.value).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal discounts = payments.stream().map(p -> p.discount).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal remaining = item.value.subtract(item.paid).max(BigDecimal.ZERO);
         UiKit.RoundPanel card = new UiKit.RoundPanel(13).fill(new Color(248, 250, 255)).shadow(false);
         card.setLayout(new BorderLayout(0, 8));
         card.setBorder(new EmptyBorder(11, 14, 11, 14));
-        card.add(LivroCaixaApp.title("Resumo da parcela", 21), BorderLayout.NORTH);
+        card.add(LivroCaixaView.title("Resumo da parcela", 21), BorderLayout.NORTH);
         JPanel rows = new JPanel(new GridLayout(5, 2, 8, 0));
         rows.setOpaque(false);
         addSummaryRow(rows, "Valor original", item.value, false);
@@ -183,7 +185,7 @@ final class ConfirmedPaymentScreen {
 
     private static void addSummaryRow(JPanel rows, String label, BigDecimal value, boolean highlight) {
         JLabel a = new JLabel(label);
-        JLabel b = LivroCaixaApp.title(LivroCaixaApp.money(value), highlight ? 22 : 18);
+        JLabel b = LivroCaixaView.title(LivroCaixaView.money(value), highlight ? 22 : 18);
         b.setHorizontalAlignment(SwingConstants.RIGHT);
         b.setForeground(highlight ? new Color(7, 125, 31) : new Color(23, 58, 145));
         if (highlight) {
