@@ -1,6 +1,25 @@
 # Compiled class file
 *.class
 
+# Saídas de compilação e arquivos gerados localmente
+build/
+tmp/
+output/
+entrega/
+
+# Configurações de editores/IDE
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
 # Log file
 *.log
 
