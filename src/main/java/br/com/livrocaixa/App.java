@@ -1,16 +1,12 @@
 package br.com.livrocaixa;
 
-import java.sql.Connection;
+import br.com.livrocaixa.view.CoordenadorTelas;
 
-import br.com.livrocaixa.config.ConexaoFactory;
+import javax.swing.SwingUtilities;
 
-/** Ponto de entrada. Por enquanto só testa a conexão; depois abrirá a tela de login. */
+/** Ponto de entrada que preserva o front visual aprovado durante a integração MVC. */
 public class App {
     public static void main(String[] args) {
-        try (Connection c = ConexaoFactory.getConexao()) {
-            System.out.println("Conectado ao banco: " + c.getCatalog());
-        } catch (Exception e) {
-            System.err.println("Falha ao conectar: " + e.getMessage());
-        }
+        SwingUtilities.invokeLater(() -> new CoordenadorTelas().iniciar());
     }
 }
